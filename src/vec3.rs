@@ -131,3 +131,7 @@ impl Vec3 {
         }
     }
 }
+
+pub fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {
+    (1.0-t)*a + t*b
+}
