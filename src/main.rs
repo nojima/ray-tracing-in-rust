@@ -1,10 +1,13 @@
+mod camera;
 mod hit;
 mod ray;
 mod vec3;
 
+use camera::Camera;
 use hit::*;
-use ray::*;
-use vec3::*;
+use rand::prelude::*;
+use ray::Ray;
+use vec3::Vec3;
 
 fn write_header(nx: i32, ny: i32) {
     println!("P3");
@@ -30,17 +33,15 @@ fn color(ray: &Ray, world: &dyn Hit) -> Vec3 {
         None => {
             let dir = ray.direction.normalize();
             let t = 0.5 * (dir.y + 1.0);
-            lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), t)
+            vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), t)
         }
     }
 }
 
 fn main() {
     let (nx, ny) = (200, 100);
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 0.0);
+    let ns = 100;
+    let camera = Camera::new();
     let world = HitList::new(vec![
         Box::new(Sphere {
             center: Vec3::new(0.0, 0.0, -1.0),
@@ -53,12 +54,13 @@ fn main() {
     ]);
     write_header(nx, ny);
     write_body(nx, ny, |x, y| {
-        let u = (x as f32) / (nx as f32);
-        let v = (y as f32) / (ny as f32);
-        let ray = Ray {
-            origin,
-            direction: lower_left_corner + u * horizontal + v * vertical,
-        };
-        color(&ray, &world)
+        let mut c = Vec3::new(0.0, 0.0, 0.0);
+        for _ in 0..ns {
+            let u = (x as f32 + random::<f32>()) / (nx as f32);
+            let v = (y as f32 + random::<f32>()) / (ny as f32);
+            let ray = camera.get_ray(u, v);
+            c = c + color(&ray, &world);
+        }
+        c / (ns as f32)
     });
 }
