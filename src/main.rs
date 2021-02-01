@@ -1,8 +1,8 @@
-mod vec3;
 mod ray;
+mod vec3;
 
-use vec3::*;
 use ray::*;
+use vec3::*;
 
 fn write_header(nx: i32, ny: i32) {
     println!("P3");
@@ -31,9 +31,9 @@ fn color(ray: Ray) -> Vec3 {
 fn main() {
     let (nx, ny) = (200, 100);
     let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal        = Vec3::new(4.0, 0.0, 0.0);
-    let vertical          = Vec3::new(0.0, 2.0, 0.0);
-    let origin            = Vec3::new(0.0, 0.0, 0.0);
+    let horizontal = Vec3::new(4.0, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, 2.0, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 0.0);
 
     write_header(nx, ny);
     write_body(nx, ny, |x, y| {
@@ -41,7 +41,7 @@ fn main() {
         let v = (y as f32) / (ny as f32);
         let ray = Ray {
             origin,
-            direction: lower_left_corner + u*horizontal + v*vertical,
+            direction: lower_left_corner + u * horizontal + v * vertical,
         };
         color(ray)
     });
