@@ -10,14 +10,40 @@ use rand::prelude::*;
 use ray::Ray;
 use vec3::Vec3;
 
+fn random_in_unit_sphere() -> Vec3 {
+    loop {
+        let x = random::<f32>() * 2.0 - 1.0;
+        let y = random::<f32>() * 2.0 - 1.0;
+        let z = random::<f32>() * 2.0 - 1.0;
+        if x * x + y * y + z * z < 1.0 {
+            return Vec3::new(x, y, z);
+        }
+    }
+}
+
 fn color(ray: &Ray, world: &dyn Hit) -> Vec3 {
-    match world.hit(ray, 0.0, f32::MAX) {
-        Some(HitRecord { normal, .. }) => 0.5 * (normal + Vec3::new(1.0, 1.0, 1.0)),
+    match world.hit(ray, 0.001, f32::MAX) {
+        Some(HitRecord { p, normal, .. }) => {
+            let target = p + normal + random_in_unit_sphere();
+            let new_ray = Ray {
+                origin: p,
+                direction: target - p,
+            };
+            0.5 * color(&new_ray, world)
+        }
         None => {
             let dir = ray.direction.normalize();
             let t = 0.5 * (dir.y + 1.0);
             vec3::lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), t)
         }
+    }
+}
+
+fn gamma_correction(c: Vec3) -> Vec3 {
+    Vec3 {
+        x: c.x.sqrt(),
+        y: c.y.sqrt(),
+        z: c.z.sqrt(),
     }
 }
 
@@ -44,6 +70,7 @@ fn main() {
             let ray = camera.get_ray(u, v);
             c = c + color(&ray, &world);
         }
-        c / (ns as f32)
+        let linear_color = c / (ns as f32);
+        gamma_correction(linear_color)
     });
 }
