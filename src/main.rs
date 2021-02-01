@@ -1,6 +1,8 @@
+mod hit;
 mod ray;
 mod vec3;
 
+use hit::*;
 use ray::*;
 use vec3::*;
 
@@ -22,10 +24,15 @@ fn write_body(nx: i32, ny: i32, plot: impl Fn(i32, i32) -> Vec3) {
     }
 }
 
-fn color(ray: Ray) -> Vec3 {
-    let dir = ray.direction.normalize();
-    let t = 0.5 * (dir.y + 1.0);
-    lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), t)
+fn color(ray: &Ray, world: &dyn Hit) -> Vec3 {
+    match world.hit(ray, 0.0, f32::MAX) {
+        Some(HitRecord { normal, .. }) => 0.5 * (normal + Vec3::new(1.0, 1.0, 1.0)),
+        None => {
+            let dir = ray.direction.normalize();
+            let t = 0.5 * (dir.y + 1.0);
+            lerp(Vec3::new(1.0, 1.0, 1.0), Vec3::new(0.5, 0.7, 1.0), t)
+        }
+    }
 }
 
 fn main() {
@@ -34,7 +41,16 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
-
+    let world = HitList::new(vec![
+        Box::new(Sphere {
+            center: Vec3::new(0.0, 0.0, -1.0),
+            radius: 0.5,
+        }),
+        Box::new(Sphere {
+            center: Vec3::new(0.0, -100.5, -1.0),
+            radius: 100.0,
+        }),
+    ]);
     write_header(nx, ny);
     write_body(nx, ny, |x, y| {
         let u = (x as f32) / (nx as f32);
@@ -43,6 +59,6 @@ fn main() {
             origin,
             direction: lower_left_corner + u * horizontal + v * vertical,
         };
-        color(ray)
+        color(&ray, &world)
     });
 }
