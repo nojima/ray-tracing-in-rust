@@ -1,10 +1,12 @@
-use crate::ray::*;
-use crate::vec3::*;
+use crate::material::Material;
+use crate::ray::Ray;
+use crate::vec3::Vec3;
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub t: f32,
     pub p: Vec3,
     pub normal: Vec3,
+    pub material: &'a dyn Material,
 }
 
 pub trait Hit {
@@ -14,6 +16,7 @@ pub trait Hit {
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
+    pub material: Box<dyn Material>,
 }
 
 impl Hit for Sphere {
@@ -33,6 +36,7 @@ impl Hit for Sphere {
                 t: t1,
                 p,
                 normal: (p - self.center) / self.radius,
+                material: self.material.as_ref(),
             });
         }
         let t2 = (-b + discriminant.sqrt()) / a;
@@ -42,6 +46,7 @@ impl Hit for Sphere {
                 t: t2,
                 p,
                 normal: (p - self.center) / self.radius,
+                material: self.material.as_ref(),
             });
         }
         None

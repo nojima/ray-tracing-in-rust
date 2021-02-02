@@ -130,6 +130,10 @@ impl Vec3 {
             z: self.x * rhs.y - self.y * rhs.x,
         }
     }
+
+    pub fn reflect(self, normal: Vec3) -> Vec3 {
+        self - 2.0 * self.dot(normal) * normal
+    }
 }
 
 pub fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {
