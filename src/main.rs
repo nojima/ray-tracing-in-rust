@@ -50,7 +50,7 @@ fn gamma_correction(c: Vec3) -> Vec3 {
 fn main() {
     let (nx, ny) = (200, 100);
     let ns = 100;
-    let camera = Camera::new();
+    let camera = Camera::new(45.0, nx as f32 / ny as f32);
     let world = HitList::new(vec![
         Box::new(Sphere {
             center: Vec3::new(0.0, 0.0, -1.0),
