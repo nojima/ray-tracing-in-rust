@@ -77,9 +77,15 @@ fn main() {
         Box::new(Sphere {
             center: Vec3::new(-1.0, 0.0, -1.0),
             radius: 0.5,
-            material: Box::new(Metal {
-                albedo: Vec3::new(0.8, 0.8, 0.8),
-                fuzz: 1.0,
+            material: Box::new(Dielectric {
+                refractive_index: 1.5,
+            }),
+        }),
+        Box::new(Sphere {
+            center: Vec3::new(-1.0, 0.0, -1.0),
+            radius: -0.45,
+            material: Box::new(Dielectric {
+                refractive_index: 1.5,
             }),
         }),
     ]);

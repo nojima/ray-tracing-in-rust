@@ -134,6 +134,17 @@ impl Vec3 {
     pub fn reflect(self, normal: Vec3) -> Vec3 {
         self - 2.0 * self.dot(normal) * normal
     }
+
+    pub fn refract(self, normal: Vec3, ni_over_nt: f32) -> Option<Vec3> {
+        let v = self.normalize();
+        let dot_vn = v.dot(normal);
+        let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dot_vn * dot_vn);
+        if discriminant > 0.0 {
+            Some(ni_over_nt * (v - dot_vn * normal) - discriminant.sqrt() * normal)
+        } else {
+            None
+        }
+    }
 }
 
 pub fn lerp(a: Vec3, b: Vec3, t: f32) -> Vec3 {

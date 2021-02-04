@@ -61,3 +61,50 @@ impl Material for Metal {
         }
     }
 }
+
+pub struct Dielectric {
+    pub refractive_index: f32,
+}
+
+fn schlick(cosine: f32, refractive_index: f32) -> f32 {
+    let r0 = (1.0 - refractive_index) / (1.0 + refractive_index);
+    let r0 = r0 * r0;
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, ray_in: &Ray, p: Vec3, normal: Vec3) -> Option<ScatterResult> {
+        let (outward_normal, ni_over_nt, cosine) = if ray_in.direction.dot(normal) > 0.0 {
+            (
+                -normal,
+                self.refractive_index,
+                self.refractive_index * ray_in.direction.dot(normal) / ray_in.direction.length(),
+            )
+        } else {
+            (
+                normal,
+                1.0 / self.refractive_index,
+                -ray_in.direction.dot(normal) / ray_in.direction.length(),
+            )
+        };
+        if let Some(refracted) = ray_in.direction.refract(outward_normal, ni_over_nt) {
+            let reflect_prob = schlick(cosine, self.refractive_index);
+            if random::<f32>() >= reflect_prob {
+                return Some(ScatterResult {
+                    scattered: Ray {
+                        origin: p,
+                        direction: refracted,
+                    },
+                    attenuation: Vec3::new(1.0, 1.0, 1.0),
+                });
+            }
+        }
+        Some(ScatterResult {
+            scattered: Ray {
+                origin: p,
+                direction: ray_in.direction.reflect(normal),
+            },
+            attenuation: Vec3::new(1.0, 1.0, 1.0),
+        })
+    }
+}
